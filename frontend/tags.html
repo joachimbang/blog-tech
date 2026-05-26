@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestion des tags</title>
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">BlogTech L1</div>
+        <ul class="nav-links">
+            <li><a href="index.html">Accueil</a></li>
+            <li><a href="create_post.html">Créer un article</a></li>
+            <li><a href="authors.html">Auteurs</a></li>
+            <li><a href="tags.html">Tags</a></li>
+        </ul>
+    </nav>
+    <main class="container">
+        <header class="page-header">
+            <h1>Gestion des tags</h1>
+            <p>Créez de nouveaux tags (catégories) pour classer vos articles.</p>
+        </header>
+        <section>
+            <h2>Ajouter un tag</h2>
+            <form id="tagForm">
+                <input type="text" id="tagName" placeholder="Nom du tag" required />
+                <button type="submit">Créer</button>
+            </form>
+        </section>
+        <section>
+            <h2>Liste des tags disponibles</h2>
+            <ul id="tagsList">
+                <!-- Rempli par JS -->
+            </ul>
+        </section>
+    </main>
+    <script src="apis/tags.js"></script>
+</body>
+</html>

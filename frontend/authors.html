@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestion des auteurs</title>
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">BlogTech L1</div>
+        <ul class="nav-links">
+            <li><a href="index.html">Accueil</a></li>
+            <li><a href="create_post.html">Créer un article</a></li>
+            <li><a href="authors.html">Auteurs</a></li>
+            <li><a href="tags.html">Tags</a></li>
+        </ul>
+    </nav>
+    <main class="container">
+        <header class="page-header">
+            <h1>Gestion des auteurs</h1>
+            <p>Ajoutez de nouveaux auteurs et consultez la liste existante.</p>
+        </header>
+        <section>
+            <h2>Ajouter un auteur</h2>
+            <form id="authorForm">
+                <input type="text" id="authorName" placeholder="Nom de l'auteur" required />
+                <input type="text" id="authorPostnom" placeholder="Postnom de l'auteur" />
+                <button type="submit">Créer</button>
+            </form>
+        </section>
+        <section>
+            <h2>Liste des auteurs</h2>
+            <table id="authorsTable" border="1" style="width:100%; border-collapse:collapse;">
+                <thead>
+                    <tr><th>Nom</th><th>Postnom</th><th>Articles écrits</th></tr>
+                </thead>
+                <tbody>
+                    <!-- Les auteurs seront injectés ici -->
+                </tbody>
+            </table>
+        </section>
+    </main>
+    <script src="apis/authors.js"></script>
+</body>
+</html>

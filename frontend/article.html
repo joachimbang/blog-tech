@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Tech L1 - Article</title>
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">BlogTech L1</div>
+        <ul class="nav-links">
+            <li><a href="index.html">Accueil</a></li>
+            <li><a href="create_post.html">Créer un article</a></li>
+            <li><a href="authors.html">Auteurs</a></li>
+            <li><a href="tags.html">Tags</a></li>
+        </ul>
+    </nav>
+
+    <main class="container">
+        <!-- Zone de l'article -->
+        <article id="singleArticleSection">
+            <h1 id="articleTitle">Chargement...</h1>
+            <p id="articleAuthor" class="author-name"></p>
+            <div id="articleContent" class="article-body"></div>
+        </article>
+
+        <!-- Zone des commentaires -->
+        <section class="comments-section">
+            <h3>Commentaires</h3>
+
+            <!-- Formulaire pour ajouter un commentaire -->
+            <div class="comment-form">
+                <input type="text" id="commentAuthor" placeholder="Votre nom (laisser vide pour rester Anonyme)" />
+                <textarea id="newCommentText" placeholder="Votre commentaire..." rows="3"></textarea>
+                <button onclick="postComment()" class="read-more-btn">Envoyer le commentaire</button>
+            </div>
+
+            <!-- Liste des commentaires -->
+            <ul id="commentsList">
+                <!-- Rempli par JS -->
+            </ul>
+        </section>
+    </main>
+
+    <script src="apis/posts.js"></script>
+    <script src="scripts/main.js"></script>
+</body>
+</html>

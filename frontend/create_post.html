@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Créer un article</title>
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">BlogTech L1</div>
+        <ul class="nav-links">
+            <li><a href="index.html">Accueil</a></li>
+            <li><a href="create_post.html">Créer un article</a></li>
+            <li><a href="authors.html">Auteurs</a></li>
+            <li><a href="tags.html">Tags</a></li>
+        </ul>
+    </nav>
+    <main class="container">
+        <h1>Créer un article</h1>
+        <form id="postForm">
+            <div>
+                <label for="title">Titre :</label>
+                <input type="text" id="title" name="title" required />
+            </div>
+            <div>
+                <label for="content">Contenu :</label>
+                <textarea id="content" name="content" rows="5" required></textarea>
+            </div>
+            <div>
+                <label for="authorSelect">Auteur :</label>
+                <select id="authorSelect" name="authorId" required>
+                    <option value="">-- Sélectionnez un auteur --</option>
+                </select>
+            </div>
+            <div>
+                <label>Tags :</label>
+                <div id="tagsContainer" style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 5px;">
+                    <!-- Checkboxes générées par JS -->
+                </div>
+            </div>
+            <button type="submit">Publier</button>
+        </form>
+    </main>
+    <script src="apis/authors.js"></script>
+    <script src="apis/tags.js"></script>
+    <script src="apis/posts.js"></script>
+</body>
+</html>
