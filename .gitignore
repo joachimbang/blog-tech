@@ -1,0 +1,43 @@
+# ==========================================
+# DOSSIERS DE DÉPENDANCES (NPM)
+# ==========================================
+# Ne jamais pousser le dossier node_modules car il est extrêmement lourd
+# et peut être régénéré à tout moment avec la commande "npm install"
+node_modules/
+**/node_modules/
+
+# ==========================================
+# SECRETS ET CONFIGURATION (SÉCURITÉ)
+# ==========================================
+# Ne jamais pousser le fichier .env en ligne car il contient les identifiants
+# secrets de votre base de données PostgreSQL
+.env
+.env.local
+.env.*.local
+**/ .env
+
+# ==========================================
+# FICHIERS D'ÉDITEURS (VS CODE, ETC.)
+# ==========================================
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db
+
+# ==========================================
+# FICHIERS TEMPORAIRES / AUXILIAIRES LATEX
+# ==========================================
+# On garde main.tex (le code source) et main.pdf (le cours compilé)
+# mais on ignore tous les fichiers de travail générés par le compilateur
+rapport_tutoriel/*.aux
+rapport_tutoriel/*.log
+rapport_tutoriel/*.toc
+rapport_tutoriel/*.synctex.gz
+rapport_tutoriel/*.fdb_latexmk
+rapport_tutoriel/*.fls
+rapport_tutoriel/
