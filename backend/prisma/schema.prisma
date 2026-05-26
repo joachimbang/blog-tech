@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Table principale – Post avec UUID comme identifiant
+model Post {
+  id        String   @id @default(uuid())
+  title     String
+  content   String
+  authorId  String?   // clé étrangère (UUID)
+  author    Author? @relation(fields: [authorId], references: [id])
+  tags      Tag[]    // many-to-many implicit
+  comments  Comment[]
+  createdAt DateTime @default(now())
+}
+
+// Modèle pour les commentaires (anonymes ou identifiés)
+model Comment {
+  id         String   @id @default(uuid())
+  text       String
+  authorName String   @default("Anonyme") // Nom du commentateur (optionnel)
+  postId     String
+  post       Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+}
+
+// Table principale – Auteur avec UUID comme identifiant
+model Author {
+  id       String   @id @default(uuid())
+  name     String
+  postnom  String?   // nom de famille (optionnel)
+  posts    Post[]   // one-to-many
+
+  @@unique([name, postnom]) // Un auteur est unique par son nom + postnom
+}
+
+// Relation many-to-many : Post ↔ Tag (implicite)
+model Tag {
+  id    String @id @default(uuid()) // UUID pour la sécurité
+  name  String @unique
+  posts Post[] // many-to-many implicit
+}
