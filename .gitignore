@@ -40,4 +40,5 @@ rapport_tutoriel/*.toc
 rapport_tutoriel/*.synctex.gz
 rapport_tutoriel/*.fdb_latexmk
 rapport_tutoriel/*.fls
-rapport_tutoriel/
+# rapport_tutoriel/ (ignored) – commentée pour permettre le suivi du fichier LaTeX
+!rapport_tutoriel/main.tex

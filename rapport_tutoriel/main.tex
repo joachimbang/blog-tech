@@ -1,0 +1,1150 @@
+
+
+% --- BLOC DE CONFIGURATION UNIVERSELLE ---
+\usepackage[a4paper, top=2.5cm, bottom=2.5cm, left=2cm, right=2cm]{geometry}
+\usepackage{fontspec}
+\usepackage[french, bidi=basic, provide=*]{babel}
+
+\babelprovide[import, onchar=ids fonts]{french}
+\babelprovide[import, onchar=ids fonts]{english}
+
+% Police moderne sans-serif par défaut pour une lecture écran/papier fluide
+\babelfont{rm}{Noto Sans}
+
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{booktabs} % Pour des tableaux professionnels
+\usepackage[most]{tcolorbox} % Pour des boîtes pédagogiques magnifiques
+
+% Configuration des couleurs de l'interface et du code
+\definecolor{brandblue}{HTML}{1E40AF}
+\definecolor{brandgreen}{HTML}{0D9488}
+\definecolor{brandpurple}{HTML}{7C3AED}
+\definecolor{brandred}{HTML}{E11D48}
+\definecolor{codebg}{HTML}{F8FAFC}
+\definecolor{bordergray}{HTML}{E2E8F0}
+\definecolor{commentgray}{HTML}{64748B}
+
+% Configuration globales des blocs de code (Listings)
+\lstset{
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    keywordstyle=\color{brandblue}\bfseries,
+    commentstyle=\color{commentgray}\itshape,
+    stringstyle=\color{brandgreen},
+    frame=single,
+    rulecolor=\color{bordergray},
+    numbers=left,
+    numberstyle=\tiny\color{commentgray},
+    tabsize=4,
+    showstringspaces=false
+}
+
+% Langage de programmation personnalisé : JavaScript étendu
+\lstdefinelanguage{JavaScript}{
+    keywords={break, case, catch, continue, debugger, default, delete, do, else, false, finally, for, function, if, in, instanceof, new, null, return, switch, this, throw, true, try, typeof, var, void, while, with, let, const, export, import, from, async, await},
+    keywordstyle=\color{brandblue}\bfseries,
+    ndkeywords={class, export, boolean, throw, implements, import, this},
+    ndkeywordstyle=\color{brandpurple}\bfseries,
+    identifierstyle=\color{black},
+    sensitive=true,
+    comment=[l]{//},
+    morecomment=[s]{/*}{*/},
+    commentstyle=\color{commentgray}\ttfamily,
+    stringstyle=\color{brandgreen}\ttfamily,
+    morestring=[b]',
+    morestring=[b]"
+}
+
+% Configuration des boîtes pédagogiques tcolorbox
+\newtcolorbox{pedabox}[1]{
+    colback=brandblue!5,
+    colframe=brandblue,
+    fonttitle=\bfseries,
+    title=#1,
+    arc=6px,
+    boxrule=1.5pt,
+    left=10pt,
+    right=10pt,
+    top=8pt,
+    bottom=8pt,
+    breakable
+}
+
+\newtcolorbox{warningbox}[1]{
+    colback=brandred!5,
+    colframe=brandred,
+    fonttitle=\bfseries,
+    title=#1,
+    arc=6px,
+    boxrule=1.5pt,
+    left=10pt,
+    right=10pt,
+    top=8pt,
+    bottom=8pt,
+    breakable
+}
+
+\newtcolorbox{infobox}[1]{
+    colback=brandgreen!5,
+    colframe=brandgreen,
+    fonttitle=\bfseries,
+    title=#1,
+    arc=6px,
+    boxrule=1.5pt,
+    left=10pt,
+    right=10pt,
+    top=8pt,
+    bottom=8pt,
+    breakable
+}
+
+% Package de gestion des liens (doit être le dernier importé)
+\usepackage[colorlinks=true, linkcolor=brandblue, urlcolor=brandblue]{hyperref}
+
+\title{\textbf{\Huge Tutoriel Complet}\\ \vspace{0.3em} \Large Création d'un Mini-Blog de Zéro \\ \vspace{0.5em} \small L1 Technologie}
+\author{\textbf{Tutorat}}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Ce document est un guide pas-à-pas. Nous allons construire ensemble un projet Web complet, en séparant rigoureusement le Frontend (l'interface utilisateur) du Backend (le serveur et la base de données). Chaque ligne de code et chaque commande tapée dans le terminal sera expliquée.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+% ==========================================
+% ÉTUDE PRÉLIMINAIRE ET ANALYSE
+% ==========================================
+\section{Étude préliminaire et Analyse Conceptuelle du Projet}
+
+Avant d'écrire la moindre ligne de code, il est indispensable de réaliser l'étude conceptuelle de notre application. Tout développement informatique de qualité débute par une phase d'analyse logicielle.
+
+\subsection{Découplage Client-Serveur : Pourquoi ?}
+L'architecture de notre mini-blog repose sur un découplage strict entre le \textbf{Client} et le \textbf{Serveur} (architecture Client-Serveur) :
+\begin{itemize}
+    \item \textbf{Le Frontend (Client) :} C'est l'interface graphique animée dans le navigateur web. Il est construit avec HTML, CSS et JavaScript. Son rôle est de mettre en forme les informations pour l'utilisateur. Pour des raisons évidentes de sécurité, le client n'a aucun accès direct à la base de données.
+    \item \textbf{Le Backend (Serveur) :} C'est une API (Application Programming Interface) construite avec Node.js et Express. Son rôle est de centraliser la logique métier, de valider la légitimité des requêtes, de nettoyer les données reçues, et d'exécuter les opérations sécurisées sur la base de données.
+    \item \textbf{La Base de Données (PostgreSQL) :} C'est l'entrepôt persistant. Les données y sont stockées de façon structurée et résistent aux redémarrages de l'ordinateur ou du serveur.
+\end{itemize}
+
+\subsection{Analyse de la Base de Données et Cardinalités}
+Pour faire fonctionner notre blog, nous modélisons quatre entités logiques (ou classes de données) :
+\begin{enumerate}
+    \item \textbf{Post (L'Article) :} Représente un article écrit sur le blog.
+    \item \textbf{Author (L'Auteur) :} Représente la personne physique qui écrit l'article.
+    \item \textbf{Comment (Le Commentaire) :} Représente la réaction d'un lecteur sous un article spécifique.
+    \item \textbf{Tag (L'Étiquette) :} Permet de ranger et de lier des articles par thème (ex: "NodeJS", "JavaScript").
+\end{enumerate}
+
+\subsubsection{Définition des relations et cardinalités}
+\begin{itemize}
+    \item \textbf{Relation Auteur $\leftrightarrow$ Article (One-to-Many / 1 à plusieurs) :}
+    Un auteur peut rédiger plusieurs articles ($0..*$), mais un article est rédigé par un seul et unique auteur ($1..1$ ou $0..1$ si l'auteur est facultatif). C'est pourquoi le modèle \texttt{Post} stocke un identifiant \texttt{authorId} (clé étrangère) faisant référence à la table des auteurs.
+
+    \item \textbf{Relation Article $\leftrightarrow$ Commentaire (One-to-Many / 1 à plusieurs) :}
+    Un article peut recevoir une infinité de commentaires de la part des lecteurs ($0..*$), mais chaque commentaire n'appartient qu'à un seul et unique article ($1..1$). Le modèle \texttt{Comment} intègre donc une clé étrangère \texttt{postId}.
+
+    \item \textbf{Relation Article $\leftrightarrow$ Tag (Many-to-Many / plusieurs à plusieurs) :}
+    Un article peut posséder plusieurs tags différents ($0..*$), et réciproquement, un même tag peut être associé à plusieurs articles différents ($0..*$). Cette relation nécessite une \textbf{table de jointure intermédiaire}. L'ORM Prisma gère cette table de jointure implicitement, ce qui évite au développeur d'écrire des requêtes de jointure complexes.
+\end{itemize}
+
+\subsubsection{Modélisation logique des classes de données}
+Voici comment ces structures se traduisent sous forme de classes de données avant leur implémentation :
+\begin{lstlisting}[language=JavaScript]
+Entity Author {
+  id: String (UUID) [Cle Primaire - Unique et imprevisible]
+  name: String [Requis - Nom de plume]
+  postnom: String [Optionnel - Nom de famille]
+}
+
+Entity Post {
+  id: String (UUID) [Cle Primaire]
+  title: String [Requis - Titre de l'article]
+  content: String [Requis - Contenu de l'article]
+  authorId: String (UUID) [Cle Etrangere - Relie a Author]
+  createdAt: Date [Ajoute automatique a la creation]
+}
+
+Entity Comment {
+  id: String (UUID) [Cle Primaire]
+  text: String [Requis - Contenu du message]
+  authorName: String [Defaut: "Anonyme" - Signature de l'utilisateur]
+  postId: String (UUID) [Cle Etrangere - Relie a Post]
+  createdAt: Date
+}
+
+Entity Tag {
+  id: String (UUID) [Cle Primaire]
+  name: String [Requis, Unique - Ex: "Express"]
+}
+\end{lstlisting}
+
+\newpage
+
+% ==========================================
+% PARTIE 1 : FRONTEND
+% ==========================================
+\section{PARTIE 1 : Le Frontend (L'Interface Client)}
+
+Avant de parler de base de données, nous devons construire l'interface graphique. C'est ce que voit l'utilisateur sur son navigateur.
+
+\subsection{Étape 1 : La structure HTML}
+Nous créons un fichier \texttt{index.html}. C'est le squelette de notre page.
+
+\begin{lstlisting}[language=HTML]
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Mon Blog</title>
+    <!-- On lie notre fichier de style CSS -->
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <h1>Liste des Articles</h1>
+    <!-- C'est ici, dans ce conteneur vide, que le JavaScript viendra injecter les articles -->
+    <div id="blogGrid"></div>
+
+    <!-- On lie notre fichier logique JavaScript -->
+    <script src="scripts/api.js"></script>
+</body>
+</html>
+\end{lstlisting}
+
+\subsection{Étape 2 : Le Style CSS (Un seul fichier, bien organisé)}
+
+\subsubsection{Règle pédagogique : un seul fichier CSS pour le blog}
+
+\begin{pedabox}{Règle Pédagogique Importante}
+Dans ce projet, tout le style du blog est regroupé dans un seul fichier : \textbf{\texttt{styles/main.css}}.
+Ce choix est délibéré pour la clarté de l'apprentissage. Le fichier \texttt{style.css} visible à la racine du projet est le style d'un exercice précédent (une liste de tâches) et n'est \textbf{pas} utilisé par les pages du blog.
+\vspace{0.5em}
+
+\textit{Bonne pratique pour un projet de cours :} Regrouper tout le style en un seul fichier bien organisé par sections (variables, navbar, grille, cartes, formulaires, commentaires) est la meilleure approche. On utilise des commentaires de section en majuscules pour s'y retrouver facilement, comme un sommaire.
+\end{pedabox}
+
+\newpage
+\subsubsection{Explication bloc par bloc du fichier \texttt{styles/main.css}}
+
+Voici le fichier CSS complet du blog, commenté ligne par ligne. Chaque commentaire explique \textbf{pourquoi} cette propriété est là et \textbf{ce qu'elle produit visuellement}.
+
+\begin{lstlisting}[language=HTML]
+/* ==== BLOC 1 : VARIABLES GLOBALES ====
+   Le selecteur :root s'applique a la racine du document HTML entier.
+   On y declare des "variables CSS" (--nom) pour centraliser les couleurs.
+   Avantage : si on veut changer la couleur principale du site, on la
+   modifie une seule fois ici, et elle se met a jour partout. */
+:root {
+    --primary-color: #2563eb;   /* Bleu moderne, couleur principale */
+    --secondary-color: #f1f5f9; /* Gris tres clair pour le fond de page */
+    --text-dark: #1e293b;       /* Gris tres fonce : texte principal */
+    --text-light: #64748b;      /* Gris moyen : sous-textes, dates */
+    --white: #ffffff;           /* Blanc pur */
+    --transition-speed: 0.3s;   /* Duree standard des animations */
+}
+
+/* ==== BLOC 2 : RESET DE BASE ====
+   Par defaut, chaque navigateur applique ses propres marges et paddings.
+   Ce reset les met tous a zero pour partir d'une base propre et identique
+   sur tous les navigateurs (Chrome, Firefox, Edge...) */
+* {
+    margin: 0;                /* Supprime toutes les marges exterieures */
+    padding: 0;               /* Supprime tous les espaces interieurs */
+    box-sizing: border-box;   /* Le padding/border est inclus dans la taille,
+                                 evite les debordements inattendus */
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--secondary-color); /* Fond gris tres doux */
+    color: var(--text-dark);  /* Couleur de texte par defaut */
+    line-height: 1.6;         /* Hauteur de ligne : ameliore la lisibilite */
+}
+
+/* ==== BLOC 3 : BARRE DE NAVIGATION (FLEXBOX) ====
+   Flexbox est un systeme de mise en page 1D (une seule ligne ou colonne).
+   display:flex met les enfants sur une ligne horizontale automatiquement. */
+.navbar {
+    background-color: var(--white);
+    padding: 1rem 2rem;       /* Espace interne : 1rem en haut/bas, 2rem cotes */
+    display: flex;            /* Active Flexbox : les enfants s'alignent en ligne */
+    justify-content: space-between; /* Pousse le logo a gauche, les liens a droite */
+    align-items: center;      /* Centre verticalement le logo et les liens */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Ombre legere sous la navbar */
+}
+
+.nav-links {
+    display: flex;            /* Les liens de navigation s'alignent aussi en ligne */
+    gap: 1.5rem;              /* Espace de 1.5rem entre chaque lien */
+    list-style: none;         /* Supprime les puces de la liste <ul> */
+}
+
+.nav-links a {
+    text-decoration: none;    /* Supprime le soulignement des liens <a> */
+    color: var(--text-dark);
+    font-weight: 500;
+    transition: color var(--transition-speed); /* Anime le changement de couleur */
+}
+
+/* Pseudo-classe :hover -> s'active quand la souris passe sur l'element */
+.nav-links a:hover {
+    color: var(--primary-color); /* Le lien devient bleu au survol */
+}
+
+/* ==== BLOC 4 : GRILLE D'ARTICLES (CSS GRID) ====
+   CSS Grid est le systeme de mise en page 2D (lignes ET colonnes).
+   Il est ideal pour placer plusieurs cartes cote a cote. */
+.blog-grid {
+    display: grid;   /* Active CSS Grid */
+    /* repeat(auto-fit, minmax(300px, 1fr)) :
+       - auto-fit : cree autant de colonnes que possible
+       - minmax(300px, 1fr) : chaque colonne a au moins 300px et au maximum
+         1 fraction de l'espace restant. Sur grand ecran = 3 colonnes,
+         sur mobile = 1 seule colonne. C'est le "Responsive" automatique ! */
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;       /* Espace de 2rem entre chaque carte */
+}
+
+/* ==== BLOC 5 : LES CARTES D'ARTICLES ====
+   Chaque article est present dans une "carte" avec coins arrondis et ombre */
+.blog-card {
+    background-color: var(--white);
+    border-radius: 12px;   /* Coins arrondis de 12 pixels */
+    overflow: hidden;      /* Cache tout ce qui depasse des coins arrondis */
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05); /* Ombre portee legere */
+    /* transition : quand une propriete change, l'animation dure 0.3s */
+    transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+}
+
+/* Au survol de la carte : elle se leve et l'ombre s'intensifie */
+.blog-card:hover {
+    transform: translateY(-5px);            /* Monte de 5px -> effet "lever" */
+    box-shadow: 0 10px 15px rgba(0,0,0,0.1); /* Ombre plus grande = plus haut */
+}
+
+/* ==== BLOC 6 : FORMULAIRES ====
+   Styles uniformes pour tous les formulaires du site */
+form {
+    background: var(--white);
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column; /* Les champs s'empilent verticalement */
+    gap: 1.5rem;            /* Espace entre chaque champ */
+    max-width: 600px;
+    margin: 0 auto;         /* Centre le formulaire horizontalement */
+}
+
+/* Style commun des champs input, textarea et select */
+input[type="text"], textarea, select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #cbd5e1;  /* Bordure grise discrete */
+    border-radius: 8px;
+    font-size: 1rem;
+    /* Quand l'utilisateur clique dans un champ (:focus), la bordure devient
+       bleue et une ombre bleue legere apparait pour guider l'oeil */
+    transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
+}
+
+input[type="text"]:focus, textarea:focus, select:focus {
+    outline: none;              /* Supprime l'outline par defaut du navigateur */
+    border-color: var(--primary-color); /* Bordure bleue */
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); /* Halo bleu transparent */
+}
+
+button[type="submit"] {
+    background-color: var(--primary-color); /* Fond bleu */
+    color: var(--white);                    /* Texte blanc */
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;  /* La souris devient une main au survol */
+    transition: background-color var(--transition-speed), transform 0.1s;
+}
+
+button[type="submit"]:hover {
+    background-color: #1d4ed8; /* Bleu plus fonce au survol */
+}
+
+/* Au clic (:active), le bouton retrecit legerement -> donne un retour tactile */
+button[type="submit"]:active {
+    transform: scale(0.98);
+}
+
+/* ==== BLOC 7 : COMMENTAIRES ====
+   Les commentaires s'affichent sous chaque article */
+.comment-date {
+    display: block;            /* Passe a la ligne sous le texte */
+    font-size: 0.78rem;        /* Petit texte */
+    color: var(--text-light);  /* Gris clair : information secondaire */
+    margin-top: 2px;
+    font-style: italic;        /* En italique pour distinguer de la valeur */
+}
+\end{lstlisting}
+
+\newpage
+
+\subsection{Étape 3 : La Logique JavaScript (Concepts fondamentaux : DOM, Fetch, Try-Catch)}
+Pour rendre notre application dynamique et lui permettre de communiquer avec la base de données, nous utilisons JavaScript. Analysons en détail les trois piliers du code JavaScript moderne utilisés ici.
+
+\subsubsection{1. Le DOM (Document Object Model)}
+\begin{itemize}
+    \item \textbf{Qu'est-ce que c'est ?} Le DOM est l'arbre hiérarchique que le navigateur génère à partir du code HTML. Chaque balise (ex: \texttt{<div>}, \texttt{<h1>}) devient un "noeud" JavaScript.
+    \item \textbf{Pourquoi l'utiliser ?} C'est l'outil qui permet à JavaScript de modifier la page web sans avoir besoin de la recharger en permanence.
+    \item \textbf{Exemple théorique simple :}
+    \begin{lstlisting}[language=JavaScript]
+const nouveauParagraphe = document.createElement('p'); // Cree une balise <p> vide
+nouveauParagraphe.textContent = "Bonjour !"; // Met du texte dedans
+document.body.appendChild(nouveauParagraphe); // Insere la balise a la fin du site
+    \end{lstlisting}
+    \item \textbf{Correspondance dans notre code :}
+    Dans le fichier \texttt{posts.js}, la ligne \texttt{const grid = document.getElementById('blogGrid')} récupère le conteneur vide défini dans le HTML. Ensuite, nous utilisons \texttt{grid.appendChild(article)} pour y greffer dynamiquement les cartes d'articles que nous générons à la volée.
+\end{itemize}
+
+\subsubsection{2. L'API Fetch et l'Asynchronisme}
+\begin{itemize}
+    \item \textbf{Qu'est-ce que c'est ?} L'API \texttt{fetch()} est l'outil natif des navigateurs pour envoyer et recevoir des requêtes HTTP (GET, POST...) vers un serveur. Les appels réseau prennent du temps. JavaScript utilise donc l'asynchronisme (\texttt{async/await}) : au lieu de bloquer l'écran en attendant la réponse, JS continue d'exécuter le reste du site et reprend dès que le serveur répond.
+    \item \textbf{Exemple théorique simple :}
+    \begin{lstlisting}[language=JavaScript]
+async function appelerAPI() {
+    // Le code attend ("await") que le serveur envoie la reponse avant de continuer
+    const response = await fetch('https://api.github.com/users/octocat');
+    const data = await response.json(); // Traduit le JSON recu en objet JS
+    console.log(data.name);
+}
+    \end{lstlisting}
+    \item \textbf{Correspondance dans notre code :}
+    Dans \texttt{posts.js}, la ligne \texttt{const response = await fetch('http://localhost:3000/posts')} interroge notre backend pour récupérer les articles en format JSON.
+\end{itemize}
+
+\subsubsection{3. Le bloc de sécurité Try...Catch}
+\begin{itemize}
+    \item \textbf{Qu'est-ce que c'est ?} C'est une structure qui permet d'intercepter les erreurs afin d'éviter qu'elles ne fassent planter toute l'application.
+    \item \textbf{Pourquoi l'utiliser ?} En développement Web, tout appel réseau (\texttt{fetch}) est susceptible d'échouer (le serveur est éteint, la base est en panne, la connexion est coupée). Sans \texttt{try...catch}, une seule erreur bloque totalement le script JavaScript de la page, figeant tout le site.
+    \item \textbf{Exemple théorique simple :}
+    \begin{lstlisting}[language=JavaScript]
+try {
+    // Code qui risque de provoquer une erreur
+    const resultat = chargerDonnees();
+} catch (error) {
+    // Si une erreur survient dans le "try", on l'attrape ici
+    console.error("Une erreur s'est produite :", error.message);
+    afficherMessageAlerte("Impossible de charger les donnees.");
+}
+    \end{lstlisting}
+    \item \textbf{Correspondance dans notre code :}
+    Dans toutes nos fonctions fetch (ex: \texttt{loadAllPosts()}), tout le code est entouré d'un bloc \texttt{try}. Si le serveur backend est éteint, l'erreur est attrapée par le \texttt{catch}, qui insère proprement un message dans le HTML : \texttt{grid.innerHTML = "<p>Impossible de contacter le serveur.</p>"}.
+\end{itemize}
+
+\subsubsection{Explication ligne par ligne du code JavaScript Frontend}
+Voici notre fichier initial \texttt{scripts/api.js} réécrit et commenté de manière très détaillée pour les étudiants :
+
+\begin{lstlisting}[language=JavaScript]
+// Definition d'une fonction asynchrone pour gerer l'attente reseau
+async function loadAllPosts() {
+    try {
+        // 1. On envoie une requete HTTP GET au serveur
+        const response = await fetch('http://localhost:3000/posts');
+
+        // 2. On convertit le flux de donnees recu en tableau d'objets JavaScript
+        const posts = await response.json();
+
+        // 3. On selectionne le conteneur HTML ou on veut afficher les articles
+        const grid = document.getElementById('blogGrid');
+        grid.innerHTML = ""; // On vide le message de chargement initial
+
+        // 4. On boucle sur chaque article recu
+        posts.forEach(post => {
+            // Pour chaque article, on cree une balise "article" en memoire
+            const article = document.createElement('article');
+            article.className = 'blog-card'; // On lui applique la classe CSS Grid
+
+            // On injecte du code HTML dynamique a l'interieur
+            article.innerHTML = `
+                <div class="card-content">
+                    <h2 class="card-title">${post.title}</h2>
+                    <p class="card-excerpt">${post.content}</p>
+                </div>
+            `;
+            // On insere cette nouvelle carte dans notre grille DOM
+            grid.appendChild(article);
+        });
+    } catch (error) {
+        // En cas de panne de l'API, on capture l'erreur pour eviter de geler l'ecran
+        console.error("Erreur serveur lors du fetch:", error);
+        const grid = document.getElementById('blogGrid');
+        grid.innerHTML = "<p>Serveur hors ligne. Impossible d'afficher les articles.</p>";
+    }
+}
+
+// On demande au navigateur de lancer la fonction des que le HTML est charge a 100%
+window.onload = loadAllPosts;
+\end{lstlisting}
+
+\begin{infobox}{Note pour l'apprenant}
+Si vous ouvrez ce fichier maintenant, la console affichera une erreur. C'est normal ! Le serveur sur le port 3000 n'existe pas encore. Passons à la Partie 2.
+\end{infobox}
+
+\subsection{Étape 4 : Séparation des Responsabilités (Architecture des dossiers)}
+Pour garder notre code propre et compréhensible, nous avons organisé les fichiers JavaScript côté Frontend par "domaine" (auteurs, articles, tags) :
+\begin{itemize}
+    \item \textbf{Le dossier \texttt{scripts/} :} Il contient les fichiers (comme \texttt{main.js}) qui s'occupent uniquement de l'interface utilisateur visuelle (UI). Ce code ne communique pas avec le serveur.
+    \item \textbf{Le dossier \texttt{apis/} :} Il contient les fichiers qui consomment l'API (le Backend). Pour plus de clarté, ils sont découpés logiquement :
+    \begin{itemize}
+        \item \texttt{posts.js} : Gère l'affichage des articles, des commentaires et l'envoi du formulaire de création.
+        \item \texttt{authors.js} : Gère la liste des auteurs et l'ajout de nouveaux auteurs.
+        \item \texttt{tags.js} : Gère la liste des tags (catégories) et leur création.
+    \end{itemize}
+\end{itemize}
+Cette séparation ("Séparation des préoccupations") permet aux étudiants de trouver facilement où se trouve le code responsable d'une action spécifique (par exemple, si on a un bug sur un tag, on ouvre \texttt{tags.js}).
+
+De plus, une mise en forme (CSS) globale a été appliquée aux formulaires et aux tableaux dans \texttt{main.css} pour un rendu beaucoup plus attrayant.
+
+\newpage
+
+% ==========================================
+% PARTIE 2 : BACKEND
+
+% ==========================================
+
+\section{PARTIE 2 : Le Backend (Serveur et Base de données de Zéro)}
+
+\subsection{Séparation du backend en modèles et routes}
+Dans le but d’améliorer la maintenabilité et la lisibilité du code serveur, nous avons refactorisé le backend en plusieurs modules distincts :
+\begin{itemize}
+  \item \texttt{backend/config/db.js} – initialise et exporte le client Prisma utilisé par toute l’application.
+  \item \texttt{backend/models/post.js} – contient les fonctions CRUD (Créer, Lire, Mettre à jour, Supprimer) pour les articles.
+  \item \texttt{backend/routes/posts.js} – routeur Express dédié aux endpoints ``/posts`` (GET, POST, PUT, DELETE).
+  \item \texttt{backend/routes/tags.js} – routeur Express pour les opérations sur les tags (GET, POST).
+  \item \texttt{backend/routes/comments.js} – routeur Express pour la création de commentaires liés aux articles.
+\end{itemize}
+Le fichier principal du serveur, \texttt{backend/server.js}, a été mis à jour afin d’importer ces routeurs et de les enregistrer avec les préfixes correspondants :
+\begin{lstlisting}[language=JavaScript]
+import postRouter from './routes/posts.js';
+import tagRouter from './routes/tags.js';
+import commentRouter from './routes/comments.js';
+
+app.use('/posts', postRouter);
+app.use('/tags', tagRouter);
+app.use('/comments', commentRouter);
+\end{lstlisting}
+Cette architecture modulaire présente plusieurs avantages :
+\begin{itemize}
+  \item **Séparation des responsabilités** – chaque module possède un rôle clairement défini (connexion DB, logique métier, gestion des routes).
+  \item **Facilité d’extension** – ajouter une nouvelle ressource (ex. : catégories, utilisateurs) ne nécessite que la création d’un modèle et d’un routeur sans toucher au cœur du serveur.
+  \item **Testabilité** – les fonctions du modèle peuvent être testées indépendamment du serveur HTTP, ce qui simplifie l’écriture de tests unitaires.
+  \item **Lisibilité** – le serveur principal reste concis, ne conservant que la configuration globale et l’enregistrement des routeurs.
+\end{itemize}
+Cette refactorisation a été implémentée sans modifier le comportement fonctionnel de l’API existante ; toutes les routes précédemment définies dans ``server.js`` sont maintenant gérées par leurs modules respectifs.
+
+% ==========================================
+\section{PARTIE 2 : Le Backend (Serveur et Base de données de Zéro)}
+
+\subsection{Étape 1 : Initialiser le projet Node.js avec NPM}
+\textbf{Commande à taper dans le terminal :}
+\begin{lstlisting}[language=bash]
+npm init -y
+\end{lstlisting}
+\textbf{Ce que fait cette commande :}
+\texttt{npm} (\textit{Node Package Manager}) est le gestionnaire de paquets officiel de Node.js. L'argument \texttt{init} initialise un nouveau projet, et le drapeau \texttt{-y} (pour \textit{yes}) accepte automatiquement toutes les questions de configuration par défaut.
+
+\textbf{Ce qui est créé après l'exécution :}
+Cette commande génère un unique fichier texte crucial à la racine de votre dossier : \textbf{\texttt{package.json}}.
+Ce fichier est la \textit{carte d'identité} et la feuille de route de votre projet. Il contient :
+\begin{itemize}
+    \item \texttt{name} et \texttt{version} : Le nom et la version actuelle de votre application.
+    \item \texttt{main} : Le point d'entrée de votre serveur (ex: \texttt{server.js}).
+    \item \texttt{scripts} : Des raccourcis de commandes pratiques pour lancer votre application dans le terminal.
+    \item \texttt{dependencies} : La liste de toutes les bibliothèques externes nécessaires au fonctionnement du projet.
+\end{itemize}
+
+\subsection{Étape 2 : Installer les bibliothèques (Dépendances)}
+Nous ne voulons pas réinventer la roue. Pour notre blog, nous avons besoin de trois outils externes de base.
+\textbf{Commande à taper :}
+\begin{lstlisting}[language=bash]
+npm install express cors @prisma/client
+\end{lstlisting}
+\textbf{Ce que fait cette commande :}
+Elle va chercher sur les serveurs globaux de NPM les bibliothèques demandées, les télécharge et les configure dans votre projet.
+
+\textbf{Ce qui est créé après l'exécution :}
+\begin{enumerate}
+    \item \textbf{Le dossier \texttt{node\_modules/} :} C'est un dossier très volumineux qui contient le code source complet de toutes les bibliothèques téléchargées ainsi que leurs propres dépendances en cascade. \textit{Important : on ne modifie jamais ce dossier et on ne l'envoie jamais sur Git (il doit être exclu via le fichier \texttt{.gitignore}).}
+    \item \textbf{Le fichier \texttt{package-lock.json} :} Ce fichier technique verrouille les versions exactes de chaque sous-dépendance installée pour garantir que tout autre développeur installant le projet obtiendra exactement la même structure de fichiers au bit près.
+    \item \textbf{Mise à jour du \texttt{package.json} :} La section \texttt{"dependencies"} de votre fichier \texttt{package.json} est mise à jour avec les noms et versions de nos bibliothèques.
+\end{enumerate}
+
+\textbf{Détail des bibliothèques installées :}
+\begin{itemize}
+    \item \textbf{Express :} Un micro-framework ultra-rapide permettant de créer un serveur HTTP et de définir des routes d'API très simplement (ex: recevoir des requêtes, renvoyer du JSON).
+    \item \textbf{CORS (\textit{Cross-Origin Resource Sharing}) :} Un utilitaire de sécurité indispensable. Par défaut, les navigateurs interdisent à un site web (ex: tournant sur le port 5500 d'un serveur Live Server) de faire des requêtes vers un autre serveur (ex: tournant sur le port 3000). CORS autorise explicitement cette communication.
+    \item \textbf{@Prisma/Client :} Le module JavaScript auto-généré par Prisma qui nous permettra de manipuler notre base de données en écrivant du JavaScript intuitif au lieu de requêtes SQL complexes.
+\end{itemize}
+
+\subsection{Étape 3 : Installer l'outil de développement (Nodemon)}
+Pendant la phase de développement, relancer le serveur manuellement à chaque fois qu'on modifie une ligne de code est fastidieux.
+\textbf{Commande à taper :}
+\begin{lstlisting}[language=bash]
+npm install --save-dev nodemon
+\end{lstlisting}
+\textbf{Ce que fait cette commande :}
+L'option \texttt{--save-dev} indique à NPM d'enregistrer \texttt{nodemon} comme une \textbf{dépendance de développement}. Cet outil ne sera pas inclus si l'application est déployée en production, car il n'est utile que pour le développeur sur sa machine locale.
+
+\textbf{Ce qui est créé après l'exécution :}
+Nodemon est téléchargé dans \texttt{node\_modules} et inscrit dans le fichier \texttt{package.json} sous la nouvelle section \texttt{"devDependencies"}.
+
+\subsection{Étape 4 : Configurer le package.json}
+Ouvrez le fichier \texttt{package.json} créé à l'étape 1. Nous devons ajouter deux configurations fondamentales pour notre tutoriel :
+\begin{enumerate}
+    \item \texttt{"type": "module"} : Indique à Node.js que nous utilisons la syntaxe d'importation moderne d'ECMAScript (\texttt{import/export} à la place de la syntaxe historique \texttt{require}).
+    \item Un script de démarrage rapide nommé \texttt{"dev"} lié à Nodemon.
+\end{enumerate}
+
+Voici à quoi ressemble votre fichier \texttt{package.json} final :
+\begin{lstlisting}
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7"
+  }
+}
+\end{lstlisting}
+
+\newpage
+
+\subsection{Étape 5 : Créer le fichier Serveur}
+Créez un fichier vide nommé \texttt{server.js} à la racine de votre dossier backend. C'est le point d'entrée de notre serveur.
+\begin{lstlisting}[language=JavaScript]
+// 1. Importation des bibliotheques installees via NPM
+import express from 'express';
+import cors from 'cors';
+
+// 2. Initialisation de l'application Express
+const app = express();
+app.use(cors()); // Active la securite CORS pour autoriser le Frontend a nous parler
+app.use(express.json()); // Permet au serveur de comprendre et lire le format JSON dans les requetes
+
+// 3. Allumage du serveur sur le port 3000
+const PORT = 3000;
+app.listen(PORT, () => {
+    console.log(`Le serveur tourne sur http://localhost:${PORT}`);
+});
+\end{lstlisting}
+
+\textbf{Testez-le :} Dans le terminal, lancez la commande \texttt{npm run dev}. Nodemon démarre et affiche que le serveur tourne. Appuyez sur \texttt{Ctrl+C} pour le couper temporairement.
+
+\subsection{Étape 6 : Introduction aux ORM et Initialisation de Prisma}
+Pour faire persister les données de notre blog, nous devons connecter notre serveur Node.js à une base de données relationnelle comme PostgreSQL.
+
+Au lieu d'écrire des requêtes SQL manuelles (qui peuvent être complexes, sujettes aux injections SQL, et difficiles à maintenir), l'industrie utilise des \textbf{ORM} (\textit{Object-Relational Mapping} ou Mapping Objet-Relationnel).
+
+\subsubsection{Qu'est-ce qu'un ORM et pourquoi l'utiliser ?}
+Un ORM est un traducteur intelligent. Il permet de représenter les tables de notre base de données sous forme d'objets ou de classes en JavaScript.
+\begin{itemize}
+    \item \textbf{Sans ORM (SQL pur) :} Le développeur doit écrire manuellement des chaînes de texte SQL : \texttt{SELECT * FROM "Post" WHERE id = 'uuid-article'}. Le résultat est un tableau d'objets bruts, sans auto-complétion ni sécurité.
+    \item \textbf{Avec un ORM (Prisma) : } Le développeur appelle des méthodes JavaScript natives : \texttt{prisma.post.findUnique({ where: { id: 'uuid-article' } })}. C'est beaucoup plus propre, mieux intégré dans l'IDE (avec auto-complétion) et évite 100\% des failles de sécurité par injection SQL.
+\end{itemize}
+Prisma est aujourd'hui l'ORM moderne de référence dans l'écosystème Node.js.
+
+\subsubsection{Initialiser Prisma dans le projet}
+\textbf{Commande à taper dans votre terminal :}
+\begin{lstlisting}[language=bash]
+npx prisma init
+\end{lstlisting}
+\textbf{Ce que fait cette commande :}
+L'outil \texttt{npx} permet d'exécuter un outil en ligne de commande (ici Prisma CLI) sans avoir besoin de l'installer globalement sur votre ordinateur.
+
+\textbf{Ce qui est créé après l'exécution :}
+\begin{enumerate}
+    \item \textbf{Un dossier \texttt{prisma/} contenant un fichier \texttt{schema.prisma} :} C'est le fichier de configuration central de Prisma. C'est ici que nous allons concevoir la structure de notre base de données en utilisant le langage de modélisation simple et clair de Prisma.
+    \item \textbf{Un fichier \texttt{.env} :} C'est un fichier texte spécial contenant nos variables d'environnement.
+\end{enumerate}
+
+\subsubsection{Le rôle crucial du fichier .env et la sécurité des secrets}
+
+\begin{warningbox}{Le rôle crucial du fichier .env et la sécurité des secrets}
+Le fichier \textbf{\texttt{.env}} (pour \textit{Environment}) joue un rôle fondamental en développement moderne :
+\begin{itemize}
+    \item \textbf{Isolation des Secrets :} Une base de données nécessite une URL de connexion contenant l'utilisateur et son mot de passe secret (ex: \texttt{postgresql://postgres:secret123@localhost...}). Si vous écrivez cette URL directement dans votre code source et que vous poussez votre projet sur GitHub, vos mots de passe deviennent publics ! En la plaçant dans le fichier \texttt{.env}, vous cachez ces informations sensibles.
+    \item \textbf{Le fichier \texttt{.gitignore} :} Le fichier \texttt{.env} ne doit \textbf{jamais} être envoyé sur Git. On ajoute son nom dans le fichier \texttt{.gitignore} pour s'assurer qu'il reste uniquement sur notre machine locale.
+    \item \textbf{Portabilité :} Si vous déployez votre application sur un serveur de production en ligne, l'URL de la base de données changera. Grâce au fichier \texttt{.env}, le code du serveur reste exactement le même, il suffit de changer la variable d'environnement sur le serveur.
+\end{itemize}
+\end{warningbox}
+
+\subsection{Étape 7 : Création de la Base dans PostgreSQL}
+Prisma ne crée pas le conteneur principal de la base de données.
+Ouvrez \textbf{pgAdmin} (l'interface de gestion de votre serveur PostgreSQL). Faites un clic droit sur "Databases" $\rightarrow$ "Create" $\rightarrow$ "Database". Appelez-la \texttt{blogdb}.
+
+Maintenant, ouvrez votre fichier \texttt{.env} local et modifiez la variable d'URL pour pointer vers votre base fraîchement créée :
+\begin{lstlisting}[language=bash]
+# Format : postgresql://UTILISATEUR:MOT_DE_PASSE@localhost:5432/NOM_BASE
+DATABASE_URL="postgresql://postgres:votre_mot_de_passe@localhost:5432/blogdb"
+\end{lstlisting}
+
+\newpage
+
+\subsection{Étape 8 : Modélisation et Synchronisation}
+Ouvrez le fichier \texttt{prisma/schema.prisma} et définissons notre table Article (\texttt{Post}) :
+
+\begin{lstlisting}[language=JavaScript]
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Creation de notre premiere table
+model Post {
+  id        Int    @id @default(autoincrement())
+  title     String
+  content   String
+  authorId  Int?
+  author    Author? @relation(fields: [authorId], references: [id])
+}
+
+model Author {
+  id    Int    @id @default(autoincrement())
+  name  String
+  posts Post[]
+}
+\end{lstlisting}
+
+Une fois sauvegardé, il faut dire à Prisma de traduire cela en SQL et de l'envoyer à PostgreSQL.
+\textbf{Commandes à taper :}
+\begin{lstlisting}[language=bash]
+npx prisma db push
+npx prisma generate
+\end{lstlisting}
+\textbf{Ce que ça fait :} \texttt{db push} pousse les tables dans la base. \texttt{generate} crée le traducteur Javascript pour que notre code puisse dialoguer avec la base.
+
+\subsection{Étape 9 : Créer notre première "Route" API}
+Retournons dans \texttt{server.js}. Nous allons créer une route pour récupérer les articles depuis la base de données.
+
+\begin{lstlisting}[language=JavaScript]
+import express from 'express';
+import cors from 'cors';
+import { PrismaClient } from '@prisma/client'; // <-- Nouveau
+
+const prisma = new PrismaClient(); // <-- Nouveau
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+// --- NOUVELLE ROUTE ---
+// Quand le Frontend demande "GET /posts", on execute cette fonction
+app.get('/posts', async (req, res) => {
+    // Demande a Prisma de recuperer TOUS les articles dans la table Post
+    const articles = await prisma.post.findMany({ include: { author: true } });
+    // Renvoie les articles au Frontend en format JSON
+    res.json(articles);
+});
+// ----------------------
+
+const PORT = 3000;
+app.listen(PORT, () => {
+    console.log(`Serveur sur http://localhost:${PORT}`);
+});
+\end{lstlisting}
+
+\subsection{Gestion des auteurs et des relations}
+Nous avons ajouté le modèle \textbf{Author} dans le schéma Prisma (voir page précédente). Le serveur expose maintenant des routes CRUD pour les auteurs et lie chaque article à un auteur via le champ `authorId`. La route `GET /posts` inclut désormais l'objet `author` grâce à `include: { author: true }`. Les routes `POST /posts` et `PUT /posts/:id` acceptent le paramètre `authorId` afin d’associer ou de modifier l’auteur d’un article. Enfin, les nouvelles routes `GET /authors` et `POST /authors` permettent de récupérer la liste des auteurs et d’en créer de nouveaux. Ces modifications sont reflétées dans le schéma Prisma et synchronisées avec la base via `npx prisma db push`.
+
+\subsection{Création d'un article avec sélection d'auteur}
+% Section vide/placeholder présente dans l'original pour la progression pédagogique.
+
+\subsection{Relation many-to-many (exemple Tag)}
+Nous introduisons le modèle \textbf{Tag} dans le schéma Prisma pour illustrer une relation many-to-many avec les articles. Chaque article peut posséder plusieurs tags, et chaque tag peut concerner plusieurs articles. Le schéma comporte les deux modèles suivants :
+
+\begin{lstlisting}[language=JavaScript]
+model Post {
+  id        String   @id @default(uuid())
+  title     String
+  content   String
+  authorId  String?
+  author    Author?  @relation(fields: [authorId], references: [id])
+  tags      Tag[]    // relation implicite
+}
+
+model Tag {
+  id    String @id @default(uuid()) // UUID pour la securite
+  name  String @unique
+  posts Post[] // relation implicite
+}
+\end{lstlisting}
+Cette configuration génère automatiquement une table de jointure gérée par Prisma (relation implicite), simplifiant grandement les opérations CRUD.
+
+\textbf{Mise en pratique sur le Front-end :} Pour prouver l'utilité de cette relation aux étudiants, nous l'avons implémentée de bout en bout.
+Côté backend, la route \texttt{POST /posts} reçoit un tableau d'identifiants (\texttt{tagIds}) et utilise l'instruction \texttt{connect} de Prisma pour lier l'article aux tags correspondants.
+Côté frontend, nous avons ajouté une page \texttt{tags.html} pour créer ces catégories. Sur la page de création d'articles (\texttt{create\_post.html}), le JavaScript récupère tous les tags via l'API et génère des cases à cocher (checkboxes). Lors de la soumission, tous les tags cochés sont envoyés au serveur, démontrant ainsi de façon visuelle la puissance d'une relation "Many-to-Many". Les tags apparaissent ensuite sous forme de "pilules" colorées sur les articles.
+
+Nous choisissons les \textbf{UUID} comme identifiants primaires pour plusieurs raisons de sécurité :
+\begin{itemize}
+    \item \textbf{Unicité globale} : les UUID sont uniques sur tous les systèmes, limitant les collisions lors de la fusion de bases de données.
+    \item \textbf{Imprévisibilité} : ils ne révèlent aucune information séquentielle, rendant difficile le devinement d’autres identifiants.
+    \item \textbf{Interopérabilité} : les UUID sont standardisés et acceptés par la plupart des bases de données et frameworks.
+\end{itemize}
+
+Dans l’interface utilisateur nous n’affichons jamais ces identifiants bruts. Les tables affichent uniquement le \textbf{nom} et le \textbf{postnom} de l’auteur ou le \textbf{titre} de l’article, garantissant que les utilisateurs ne voient jamais les clés internes.
+
+Nous ajoutons une nouvelle page \texttt{create\_post.html} contenant un formulaire permettant de saisir le titre, le contenu et de choisir un auteur dans un \texttt{<select>}. Le script \texttt{post\_form.js} charge dynamiquement la liste des auteurs depuis l'API \texttt{/authors} et envoie une requête \texttt{POST /posts} incluant \texttt{authorId}.
+
+\subsection{Gestion des auteurs depuis le front-end}
+Nous avons créé la page \texttt{authors.html} qui affiche la liste des auteurs dans un tableau et propose un formulaire d’ajout d’auteur. Le script \texttt{scripts/authors.js} récupère les auteurs via \texttt{GET /authors}, les insère dans le tableau, et envoie \texttt{POST /authors} lorsqu’un nouveau nom est soumis. Cette interface complète la gestion des auteurs côté back-end.
+
+\newpage
+
+% ==========================================
+% CHAPITRE 3 : TROUBLESHOOTING (ERREURS REELLES)
+% ==========================================
+\section{Foire Aux Questions et Erreurs Courantes}
+
+Lors de la réalisation de ce projet, il est possible que certaines commandes échouent à cause de l'environnement de votre ordinateur. Voici des erreurs réelles que vous pourriez rencontrer.
+
+\subsection{Erreur : Lock compromised (ECOMPROMISED) avec Prisma}
+\textbf{Le symptôme :} Au moment de taper la commande \texttt{npx prisma init}, le terminal bloque et affiche le message rouge suivant :
+\begin{lstlisting}[language=bash]
+npm error code ECOMPROMISED
+npm error Lock compromised
+\end{lstlisting}
+
+\textbf{Pourquoi cela arrive-t-il ?}
+L'outil \texttt{npx} est conçu pour télécharger et exécuter la commande Prisma "à la volée" si elle n'est pas déjà installée sur votre projet. Cependant, si le "cache" global de NPM sur votre ordinateur est corrompu, \texttt{npx} panique et refuse de procéder par sécurité (erreur de verrouillage d'intégrité).
+
+\textbf{Comment corriger ?}
+La solution est d'installer l'outil Prisma \textbf{localement} dans votre projet pour éviter que \texttt{npx} n'ait besoin d'aller sur Internet. Tapez simplement ces commandes :
+\begin{enumerate}
+    \item \texttt{npm install prisma --save-dev} (Ceci installe le CLI Prisma dans votre dossier \texttt{node\_modules} en tant qu'outil de développement).
+    \item \texttt{npx prisma init} (Maintenant, \texttt{npx} utilisera la version installée localement et fonctionnera du premier coup !).
+\end{enumerate}
+
+\subsection{Erreur : Prisma 7 --- La propriété \texttt{url} non supportée (P1012)}
+\textbf{Le symptôme :} Quand vous tapez \texttt{npx prisma db push}, le terminal affiche :
+\begin{lstlisting}[language=bash]
+Error code: P1012
+error: The datasource property `url` is no longer supported
+in schema files.
+Prisma CLI Version : 7.x.x
+\end{lstlisting}
+
+\textbf{Pourquoi cela arrive-t-il ?}
+Prisma sort régulièrement de nouvelles versions majeures. La version \textbf{7} a introduit un changement majeur : la propriété \texttt{url} dans le \texttt{schema.prisma} n'est plus acceptée. Il faut maintenant un fichier de configuration séparé.
+
+\textbf{Comment corriger ?}
+Pour ce cours, nous utilisons \textbf{Prisma 5}, la version stable dont toute la documentation en ligne est basée. On force l'installation d'une version précise avec le symbole \texttt{@} :
+\begin{lstlisting}[language=bash]
+npm install prisma@5 --save-dev
+npm install @prisma/client@5
+\end{lstlisting}
+Cela remplace la version 7 par la version 5. Relancez ensuite \texttt{npx prisma db push} — cela fonctionnera.
+
+\subsection{Conclusion}
+Vous pouvez maintenant relancer \texttt{npm run dev}. Votre Serveur (Backend) est connecté à la BDD. Si vous rouvrez votre page Frontend (\texttt{index.html}), la fonction \texttt{fetch('http://localhost:3000/posts')} va réussir à dialoguer avec le serveur et affichera vos articles !
+
+\newpage
+
+% ==========================================
+% TESTER L'API AVEC POSTMAN
+% ==========================================
+\section{Tester les routes API avec Postman}
+
+Avant de connecter le Frontend, il est indispensable de savoir vérifier que le Backend fonctionne correctement de façon autonome. L'outil standard de l'industrie pour cela est \textbf{Postman}.
+
+\subsection{Qu'est-ce que Postman ?}
+Postman est une application gratuite qui permet d'envoyer des requêtes HTTP (GET, POST, PUT, DELETE) directement vers n'importe quelle API, sans passer par un navigateur ni un formulaire HTML. C'est l'équivalent d'un \textit{testeur universel} pour les API REST.
+
+\textbf{Pourquoi l'utiliser ?}
+\begin{itemize}
+    \item \textbf{Déboguer sans Frontend :} On peut tester une route du Backend \texttt{POST /authors} avant même d'avoir créé le formulaire HTML. On s'assure que la logique du serveur est correcte.
+    \item \textbf{Visualiser les réponses JSON :} Postman formate et colorie automatiquement le JSON retourné par l'API, ce qui le rend très lisible.
+    \item \textbf{Tester les erreurs :} On peut facilement envoyer des données incorrectes (ex: un champ manquant) pour vérifier que le serveur renvoie bien l'erreur 400 ou 409 attendue.
+    \item \textbf{Documenter et partager :} On peut sauvegarder ses requêtes dans une "Collection" et la partager avec toute l'équipe.
+\end{itemize}
+
+\textbf{Installation :} Téléchargez Postman gratuitement sur \texttt{https://www.postman.com/downloads/}.
+
+\subsection{Tester nos routes avec Postman}
+
+Voici comment tester chaque route de notre API. Assurez-vous que votre serveur est lancé (\texttt{npm run dev} dans le dossier \texttt{backend}).
+
+\subsubsection{Route 1 : Récupérer tous les articles (GET)}
+\begin{lstlisting}[language=bash]
+Methode  : GET
+URL      : http://localhost:3000/posts
+Body     : (vide - une requete GET ne contient pas de body)
+\end{lstlisting}
+\textbf{Résultat attendu :} Un tableau JSON avec la liste de tous vos articles, incluant l'auteur et les tags associés. Code HTTP : \texttt{200 OK}.
+
+\subsubsection{Route 2 : Créer un auteur (POST)}
+\begin{lstlisting}[language=bash]
+Methode  : POST
+URL      : http://localhost:3000/authors
+Headers  : Content-Type: application/json
+Body (JSON) :
+{
+    "name": "Jean",
+    "postnom": "Dupont"
+}
+\end{lstlisting}
+\textbf{Dans Postman :} Cliquez sur l'onglet \texttt{Body}, sélectionnez \texttt{raw} puis \texttt{JSON} dans le menu déroulant. Collez le JSON ci-dessus.\\
+\textbf{Résultat attendu :} L'objet JSON du nouvel auteur créé avec son UUID. Code HTTP : \texttt{201 Created}.\\
+\textbf{Test d'erreur :} Envoyez la même requête une seconde fois. Le serveur doit répondre avec le code \texttt{409 Conflict} et le message \texttt{"Un auteur avec ce nom et postnom existe déjà"}.
+
+\subsubsection{Route 3 : Créer un article (POST)}
+\begin{lstlisting}[language=bash]
+Methode  : POST
+URL      : http://localhost:3000/posts
+Headers  : Content-Type: application/json
+Body (JSON) :
+{
+    "title": "Mon premier article",
+    "content": "Ceci est le contenu de mon article.",
+    "authorId": "<coller-uuid-auteur-ici>",
+    "tagIds": ["<uuid-tag-1>", "<uuid-tag-2>"]
+}
+\end{lstlisting}
+\textbf{Astuce :} Récupérez d'abord un UUID d'auteur via \texttt{GET /authors} et un UUID de tag via \texttt{GET /tags}, puis collez-les dans le body.
+
+\subsubsection{Route 4 : Supprimer un article (DELETE)}
+\begin{lstlisting}[language=bash]
+Methode  : DELETE
+URL      : http://localhost:3000/posts/<uuid-de-l-article>
+Body     : (vide)
+\end{lstlisting}
+\textbf{Résultat attendu :} Aucun contenu dans la réponse. Code HTTP : \texttt{204 No Content}. Tous les commentaires liés à cet article sont aussi supprimés automatiquement (grâce à la règle \texttt{onDelete: Cascade} dans le schéma Prisma).
+
+\newpage
+\section*{Annexe : Correspondance Prisma $\Leftrightarrow$ SQL PostgreSQL}
+\addcontentsline{toc}{section}{Annexe : Correspondance Prisma $\Leftrightarrow$ SQL PostgreSQL}
+
+L'un des grands avantages de Prisma est qu'il génère du SQL automatiquement. Voici comment chaque instruction Prisma utilisée dans ce projet correspond à une requête SQL PostgreSQL réelle. Cela permet aux étudiants de comprendre ce qui se passe réellement dans la base de données.
+
+\subsection*{1. Lire tous les articles (READ)}
+
+\textbf{Code Prisma (server.js) :}
+\begin{lstlisting}[language=JavaScript]
+const articles = await prisma.post.findMany({
+    include: { author: true, tags: true }
+});
+\end{lstlisting}
+
+\textbf{Requête SQL équivalente :}
+\begin{lstlisting}[language=SQL]
+SELECT "Post".*,
+       "Author"."name", "Author"."postnom",
+       "Tag"."id", "Tag"."name"
+FROM "Post"
+LEFT JOIN "Author" ON "Post"."authorId" = "Author"."id"
+LEFT JOIN "_PostToTag" ON "Post"."id" = "_PostToTag"."A"
+LEFT JOIN "Tag"       ON "_PostToTag"."B" = "Tag"."id";
+\end{lstlisting}
+
+\subsection*{2. Lire un article par ID (READ ONE)}
+
+\textbf{Code Prisma :}
+\begin{lstlisting}[language=JavaScript]
+const article = await prisma.post.findUnique({
+    where: { id: "uuid-de-l-article" },
+    include: { author: true, comments: true, tags: true }
+});
+\end{lstlisting}
+
+\textbf{Requête SQL équivalente :}
+\begin{lstlisting}[language=SQL]
+SELECT * FROM "Post"
+LEFT JOIN "Author"  ON "Post"."authorId" = "Author"."id"
+LEFT JOIN "Comment" ON "Post"."id"       = "Comment"."postId"
+LEFT JOIN "_PostToTag" ON "Post"."id"    = "_PostToTag"."A"
+LEFT JOIN "Tag"        ON "_PostToTag"."B" = "Tag"."id"
+WHERE "Post"."id" = 'uuid-de-l-article';
+\end{lstlisting}
+
+\subsection*{3. Créer un article (CREATE)}
+
+\textbf{Code Prisma :}
+\begin{lstlisting}[language=JavaScript]
+const newPost = await prisma.post.create({
+    data: {
+        title: "Mon titre",
+        content: "Le contenu",
+        authorId: "uuid-auteur",
+        tags: { connect: [{ id: "uuid-tag" }] }
+    }
+});
+\end{lstlisting}
+
+\textbf{Requêtes SQL équivalentes (en deux temps) :}
+\begin{lstlisting}[language=SQL]
+-- 1. Insertion de l'article
+INSERT INTO "Post" ("id", "title", "content", "authorId", "createdAt")
+VALUES (gen_random_uuid(), 'Mon titre', 'Le contenu', 'uuid-auteur', NOW());
+
+-- 2. Liaison avec le tag (table de jointure)
+INSERT INTO "_PostToTag" ("A", "B")
+VALUES ('uuid-du-nouveau-post', 'uuid-tag');
+\end{lstlisting}
+
+\subsection*{4. Créer un commentaire (CREATE)}
+
+\textbf{Code Prisma :}
+\begin{lstlisting}[language=JavaScript]
+const newComment = await prisma.comment.create({
+    data: { text: "Super !", postId: "uuid-post", authorName: "Jean" }
+});
+\end{lstlisting}
+
+\textbf{Requête SQL équivalente :}
+\begin{lstlisting}[language=SQL]
+INSERT INTO "Comment" ("id", "text", "authorName", "postId", "createdAt")
+VALUES (gen_random_uuid(), 'Super !', 'Jean', 'uuid-post', NOW());
+\end{lstlisting}
+
+\subsection*{5. Vérifier les doublons d'auteurs (READ + logique)}
+
+\textbf{Code Prisma :}
+\begin{lstlisting}[language=JavaScript]
+const existe = await prisma.author.findFirst({
+    where: { name: "Jean", postnom: "Dupont" }
+});
+\end{lstlisting}
+
+\textbf{Requête SQL équivalente :}
+\begin{lstlisting}[language=SQL]
+SELECT * FROM "Author"
+WHERE "name" = 'Jean' AND "postnom" = 'Dupont'
+LIMIT 1;
+\end{lstlisting}
+
+\subsection*{6. Créer un auteur (CREATE)}
+
+\textbf{Code Prisma :}
+\begin{lstlisting}[language=JavaScript]
+const newAuthor = await prisma.author.create({
+    data: { name: "Jean", postnom: "Dupont" }
+});
+\end{lstlisting}
+
+\textbf{Requête SQL équivalente :}
+\begin{lstlisting}[language=SQL]
+INSERT INTO "Author" ("id", "name", "postnom")
+VALUES (gen_random_uuid(), 'Jean', 'Dupont');
+\end{lstlisting}
+
+\newpage
+\subsection*{Récapitulatif des correspondances}
+
+\begin{center}
+\small
+\begin{tabular}{ll}
+\toprule
+\textbf{Méthode Prisma} & \textbf{Équivalent SQL} \\
+\midrule
+\texttt{findMany(\{\})} & \texttt{SELECT * FROM ...} \\
+\texttt{findUnique(\{ where: \{ id \} \})} & \texttt{SELECT * ... WHERE id = ...} \\
+\texttt{findFirst(\{ where \})} & \texttt{SELECT * ... WHERE ... LIMIT 1} \\
+\texttt{create(\{ data \})} & \texttt{INSERT INTO ...} \\
+\texttt{update(\{ where, data \})} & \texttt{UPDATE ... SET ... WHERE ...} \\
+\texttt{delete(\{ where \})} & \texttt{DELETE FROM ... WHERE ...} \\
+\texttt{include: \{ author: true \}} & \texttt{JOIN} (jointure de table) \\
+\texttt{connect: [\{ id \}]} & \texttt{INSERT INTO table\_jointure ...} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\newpage
+
+% ==========================================
+% RÉFÉRENCES ET RESSOURCES
+% ==========================================
+\section*{Références et Ressources pour aller plus loin}
+\addcontentsline{toc}{section}{Références et Ressources}
+
+Cette section liste les ressources officielles et de qualité que les étudiants peuvent consulter pour approfondir chaque concept abordé dans ce tutoriel.
+
+\subsection*{Documentation Officielle}
+\begin{itemize}
+    \item \textbf{Node.js} --- Documentation officielle du runtime JavaScript côté serveur :\\
+    \href{https://nodejs.org/fr/docs/}{https://nodejs.org/fr/docs/}
+
+    \item \textbf{Express.js} --- Guide et référence API du framework de serveur HTTP :\\
+    \href{https://expressjs.com/fr/}{https://expressjs.com/fr/}
+
+    \item \textbf{Prisma} --- Documentation complète de l'ORM (schéma, Client, Migrate) :\\
+    \href{https://www.prisma.io/docs/}{https://www.prisma.io/docs/}
+
+    \item \textbf{PostgreSQL} --- Documentation du système de gestion de base de données :\\
+    \href{https://www.postgresql.org/docs/}{https://www.postgresql.org/docs/}
+
+    \item \textbf{MDN Web Docs (Mozilla)} --- La référence absolue pour HTML, CSS et JavaScript, en français :\\
+    \href{https://developer.mozilla.org/fr/}{https://developer.mozilla.org/fr/}
+\end{itemize}
+
+\subsection*{Concepts Clés Approfondis}
+\begin{itemize}
+    \item \textbf{API Fetch (MDN)} --- Référence et tutoriels sur l'asynchronisme et la récupération de données en JS :\\
+    \href{https://developer.mozilla.org/fr/docs/Web/API/Fetch_API}{https://developer.mozilla.org/fr/docs/Web/API/Fetch\_API}
+
+    \item \textbf{CSS Grid Layout (MDN)} --- Guide interactif et complet sur CSS Grid :\\
+    \href{https://developer.mozilla.org/fr/docs/Web/CSS/CSS_grid_layout}{https://developer.mozilla.org/fr/docs/Web/CSS/CSS\_grid\_layout}
+
+    \item \textbf{CSS Flexbox Layout (MDN)} --- Guide interactif sur CSS Flexbox :\\
+    \href{https://developer.mozilla.org/fr/docs/Web/CSS/CSS_flexible_box_layout}{https://developer.mozilla.org/fr/docs/Web/CSS/CSS\_flexible\_box\_layout}
+
+    \item \textbf{UUID (RFC 4122)} --- Spécification officielle du standard des identifiants universellement uniques :\\
+    \href{https://www.rfc-editor.org/rfc/rfc4122}{https://www.rfc-editor.org/rfc/rfc4122}
+
+    \item \textbf{CORS (MDN)} --- Explication de la politique de même origine et de CORS :\\
+    \href{https://developer.mozilla.org/fr/docs/Web/HTTP/CORS}{https://developer.mozilla.org/fr/docs/Web/HTTP/CORS}
+
+    \item \textbf{HTTP Status Codes} --- Liste et définition de tous les codes de retour HTTP (200, 201, 400, 404, 409, 500...) :\\
+    \href{https://developer.mozilla.org/fr/docs/Web/HTTP/Status}{https://developer.mozilla.org/fr/docs/Web/HTTP/Status}
+\end{itemize}
+
+\subsection*{Outils Utilisés dans ce Projet}
+\begin{itemize}
+    \item \textbf{Postman} --- Outil de test d'API REST, disponible en version Desktop :\\
+    \href{https://www.postman.com/downloads/}{https://www.postman.com/downloads/}
+
+    \item \textbf{pgAdmin} --- Interface graphique officielle de gestion PostgreSQL :\\
+    \href{https://www.pgadmin.org/download/}{https://www.pgadmin.org/download/}
+
+    \item \textbf{Visual Studio Code} --- Éditeur de code recommandé, gratuit et extensible :\\
+    \href{https://code.visualstudio.com/}{https://code.visualstudio.com/}
+
+    \item \textbf{NPM (Node Package Manager)} --- Registre et documentation de toutes les bibliothèques Node.js :\\
+    \href{https://www.npmjs.com/}{https://www.npmjs.com/}
+\end{itemize}
+
+\subsection*{Pour Aller Plus Loin (Sujets de Recherche)}
+\begin{itemize}
+    \item \textbf{REST vs GraphQL} : Comparer l'architecture REST (que nous utilisons) avec GraphQL, l'alternative développée par Meta.
+    \item \textbf{JWT (JSON Web Tokens)} : Apprendre à sécuriser les routes API avec une authentification par jetons (ex: connexion utilisateur).
+    \item \textbf{Prisma Migrate} : Utiliser les migrations versionnées (\texttt{prisma migrate dev}) à la place de \texttt{db push} pour un contrôle de version rigoureux de la base de données.
+    \item \textbf{Variables d'environnement (.env)} : La bibliothèque \texttt{dotenv} pour charger le \texttt{.env} dans Node.js en dehors de Prisma.
+    \item \textbf{Déploiement} : Héberger le Frontend sur \textit{Vercel} ou \textit{Netlify}, et le Backend avec la base de données sur \textit{Railway} ou \textit{Render}.
+\end{itemize}
+
+\end{document}
